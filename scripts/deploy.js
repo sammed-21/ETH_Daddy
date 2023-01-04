@@ -4,14 +4,48 @@
 // You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
+const { ethers } = require("hardhat");
 const hre = require("hardhat");
 
 const tokens = (n) => {
-  return ethers.utils.parseUnits(n.toString(), 'ether')
-}
+  return ethers.utils.parseUnits(n.toString(), "ether");
+};
 
 async function main() {
+  //setup accounts and variables
+  const [deployer] = await ethers.getSigners();
+  const NAME = "Sammed";
+  const SYMBOL = "SAMETH";
 
+  //deploy contract
+  const ETHDaddy = await ethers.getContractFactory("ETHDaddy");
+  const ethDaddy = await ETHDaddy.deploy(NAME, SYMBOL);
+  await ethDaddy.deployed();
+  console.log(`Deployed Domain Contract at: ${ethDaddy.address}`);
+  //list 6 domain
+  const names = [
+    "samm.eth",
+    "john.eth",
+    "henry.eth",
+    "cobalt.eth",
+    "oxygen.eth",
+    "across.eth",
+  ];
+  const costs = [
+    tokens(12),
+    tokens(25),
+    tokens(15),
+    tokens(28),
+    tokens(3),
+    tokens(26),
+  ];
+  for (var i = 0; i < 6; i++) {
+    const transaction = await ethDaddy
+      .connect(deployer)
+      .list(names[i], costs[i]);
+    await transaction.wait();
+    console.log(`listed domain ${i + 1}:${names[i]}`);
+  }
 }
 
 main().catch((error) => {
